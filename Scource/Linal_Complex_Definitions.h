@@ -136,7 +136,7 @@ namespace linal
     template<typename MathT>
     Complex<T>& Complex<T>::Normalize(MathT&& sqrt_calculator) 
     {
-        AsVect().Normalize(sqrt_calculator);
+        AsVect().Normalize(std::forward(sqrt_calculator));
         return *this;
     }
 
@@ -144,7 +144,7 @@ namespace linal
     template<typename MathT>
     Complex<T> Complex<T>::Normalized(MathT&& sqrt_calculator) const
     {
-        return Complex<T>(*this).Normalize(sqrt_calculator);
+        return Complex<T>(*this).Normalize(std::forward(sqrt_calculator));
     }
 
     template<typename T>

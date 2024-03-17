@@ -105,6 +105,16 @@ namespace linal
     {
         return Vector2<T>(*this) *= complex;
     }
+    
+    template<typename T>
+    Vector2<T> Vector2<T>::operator*(const Matrix2x2<T>& matrix) const noexcept 
+    {
+        return
+        {
+            x * matrix.line1.x + y * matrix.line2.x,
+            x * matrix.line1.y + y * matrix.line2.y
+        }
+    }
 
     template<typename T>
     T Vector2<T>::Dot(const Vector2<T>& other) const noexcept
@@ -137,7 +147,7 @@ namespace linal
     }
 
     template<typename T>
-    Vector2<T> Vector2<T>::Normalized() const
+    Direction2<T> Vector2<T>::Normalized() const
     {
         return Vector2<T>(*this).Normalize();
     }
@@ -151,9 +161,9 @@ namespace linal
 
     template<typename T>
     template<typename MathT>
-    Vector2<T> Vector2<T>::Normalized(MathT&& sqrt_calculator) const
+    Direction2<T> Vector2<T>::Normalized(MathT&& sqrt_calculator) const
     {
-        return Vector2<T>(*this) /= Abs(std::forward(sqrt_calculator));
+        return Vector2<T>(*this).Normalize(std::forward(sqrt_calculator));
     }
 
     template<typename T>
