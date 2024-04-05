@@ -15,13 +15,13 @@ namespace linal // structures declarations
     struct Complex;
 
     template<typename T>
-    struct Rotator2;
+    struct Rotator2; // to do
 
     template<typename T>
     struct Matrix2x2;
 
     template<typename T>
-    struct RotMatrix2x2;
+    struct RotMatrix2x2; // to do
 
     template<typename T>
     using Transform2dUniform = std::array<T, 9>;
@@ -107,7 +107,7 @@ namespace linal // structures declarations
         const T& GetY() const noexcept;
 
         //same as operator const Vector2();
-        const Vector2<T> AsVect() const noexcept;
+        const Vector2<T>& AsVect() const noexcept;
         operator const Vector2<T>& () const noexcept;
 
         Direction2<T> operator*(const Rotator2<T> complex) const noexcept;
@@ -127,8 +127,8 @@ namespace linal // structures declarations
         bool operator!=(const Direction2<T>& other) const noexcept;
         bool Compare(const Direction2<T>& other, const T& epsilon2) const noexcept;
 
-        Rotator<T>& AsComplex() noexcept;
-        const Rotator<T>& AsComplex() const noexcept;
+        Rotator2<T>& AsComplex() noexcept;
+        const Rotator2<T>& AsComplex() const noexcept;
 
         static constexpr Direction2<T> up = Vector2<T>{0, 1};
         static constexpr Direction2<T> forward = up;
@@ -169,6 +169,8 @@ namespace linal // structures declarations
         template<typename MathT>
         T Abs(MathT&& sqrt_calculator) const noexcept;
 
+        Matrix2x2<T> MakeMatrix() const noexcept;
+
         Complex<T> operator + (const Complex<T>& other) const noexcept;
         Complex<T> operator - (const Complex<T>& other) const noexcept;
         Complex<T> operator * (const Complex<T>& other) const noexcept;
@@ -182,13 +184,13 @@ namespace linal // structures declarations
         Complex<T> Conjugate() const noexcept;
 
         Complex<T>& Normalize();
-        Complex<T> Normalized() const;
+        Rotator2<T> Normalized() const;
         // the sqrt_calculator should have method "Sqrt(const T&) -> T&&"
         template<typename MathT>
         Complex<T>& Normalize(MathT&& sqrt_calculator);
         // the sqrt_calculator should have method "Sqrt(const T&) -> T&&"
         template<typename MathT>
-        Complex<T> Normalized(MathT&& sqrt_calculator) const;
+        Rotator2<T> Normalized(MathT&& sqrt_calculator) const;
 
         bool operator == (const Complex<T>& other) const noexcept;
         bool operator != (const Complex<T>& other) const noexcept;
@@ -209,10 +211,62 @@ namespace linal // structures declarations
 //==============================================================================================================================================
 
     template<typename T>
+    struct Rotator2
+    {
+        // Constructors
+        Rotator2() = delete;
+        Rotator2(const Rotator2<T>& other) noexcept = default;
+        Rotator2(Rotator2<T>&& other) noexcept = default;
+        Rotator2<T>& operator=(const Rotator2<T>& other) noexcept = default;
+        Rotator2<T>& operator=(Rotator2<T>&& other) noexcept = default;
+
+        const T& GetRe() const noexcept;
+        const T& GetIm() const noexcept;
+
+        //same as operator const Vector2();
+        const Complex<T>& AsComplex() const noexcept;
+        operator const Complex<T>& () const noexcept;
+
+        RotMatrix2x2<T> MakeMatrix() const noexcept;
+
+        Rotator2<T> operator*(const Rotator2<T> other) const noexcept;
+
+        Direction2<T>& RepairFast();
+        Direction2<T>& Repair();
+        // the sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        Direction2<T>& Repair(MathT&& sqrt_calculator);
+
+        bool operator==(const Direction2<T>& other) const noexcept;
+        bool operator!=(const Direction2<T>& other) const noexcept;
+        bool Compare(const Direction2<T>& other, const T& epsilon2) const noexcept;
+
+        Direction2<T>& AsVect() noexcept;
+        const Direction2<T>& AsVect() const noexcept;
+
+        static constexpr Rotator2<T> identity = Complex<T>{1, 0};
+        static constexpr Rotator2<T> orthogonal_left = Complex<T>{0, 1};
+        static constexpr Rotator2<T> orthogonal_right = Complex<T>{0, -1};
+        static constexpr Rotator2<T> turn_around = Complex<T>{-1, 0};
+
+    private:
+        Complex<T> value;
+        
+        friend struct Complex<T>;
+
+        explicit Rotator2(const Complex<T>& complex) noexcept;
+        explicit Rotator2(Complex<T>&& complex) noexcept;
+        Rotator2<T>& operator=(const Complex<T>& complex) noexcept;
+        Rotator2<T>& operator=(Complex<T>&& complex) noexcept;
+    };
+
+//==============================================================================================================================================
+
+    template<typename T>
     struct Matrix2x2
     {
-        Vector2<T> line1 = {1, 0};
-        Vector2<T> line2 = {0, 1};
+        Vector2<T> line1 = {0, 0};
+        Vector2<T> line2 = {0, 0};
 
         // Compound assignment operators
         Matrix2x2<T>& operator+=(const Matrix2x2<T>& other) noexcept;
@@ -260,6 +314,10 @@ namespace linal // structures declarations
     using Matrix2x2D = Matrix2x2<double>;
     using Matrix2x2F = Matrix2x2<float>;
     using Matrix2x2I = Matrix2x2<int>;
+
+
+//==============================================================================================================================================
+
 }
 
 //==============================================================================================================================================
@@ -267,3 +325,5 @@ namespace linal // structures declarations
 #include "Linal_Vector2_Definitions.h"
 #include "Linal_Complex_Definitions.h"
 #include "Linal_Matrix2x2_Definitions.h"
+#include "Linal_Direction2_Definitions.h"
+#include "Linal_Rotator2_Definitions.h"

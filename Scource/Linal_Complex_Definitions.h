@@ -64,6 +64,16 @@ namespace linal
     }
 
     template<typename T>
+    Matrix2x2<T> Complex<T>::MakeMatrix() const noexcept
+    {
+        return Matrix2x2
+        {
+            {re, -im},
+            {im, re}
+        };
+    }
+
+    template<typename T>
     Complex<T> Complex<T>::operator + (const Complex<T>& other) const noexcept 
     {
         return Complex<T>(*this) += other;
@@ -127,7 +137,7 @@ namespace linal
     }
 
     template<typename T>
-    Complex<T> Complex<T>::Normalized() const 
+    Rotator2<T> Complex<T>::Normalized() const 
     {
         return Complex<T>(*this).Normalize();
     }
@@ -142,7 +152,7 @@ namespace linal
 
     template<typename T>
     template<typename MathT>
-    Complex<T> Complex<T>::Normalized(MathT&& sqrt_calculator) const
+    Rotator2<T> Complex<T>::Normalized(MathT&& sqrt_calculator) const
     {
         return Complex<T>(*this).Normalize(std::forward(sqrt_calculator));
     }
