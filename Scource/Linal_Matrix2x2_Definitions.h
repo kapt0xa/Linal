@@ -102,7 +102,7 @@ namespace linal
     }
 
     template<typename T>
-    Matrix2x2<T> Matrix2x2<T>::Transpose() const noexcept 
+    Matrix2x2<T> Matrix2x2<T>::Transposed() const noexcept 
     {
         return 
         { 
@@ -119,7 +119,7 @@ namespace linal
 
     // Inverse
     template<typename T>
-    Matrix2x2<T> Matrix2x2<T>::Inverse() const 
+    Matrix2x2<T> Matrix2x2<T>::Inversed() const 
     {
         T det = Det();
         if (det == 0) 
@@ -132,5 +132,65 @@ namespace linal
             {-line2.x / det, line1.x / det} 
         };
     }
+
+    template<typename T>
+    Transform2dUniform<T> Matrix2x2<T>::MakeTransform2D(const Vector2<T>& offset) const noexcept
+    {
+        Transform2dUniform<T> transform;
+        transform[0] = line1.x;
+        transform[1] = line1.y;
+        transform[2] = offset.x;
+        transform[3] = line2.x;
+        transform[4] = line2.y;
+        transform[5] = offset.y;
+        transform[6] = 0;
+        transform[7] = 0;
+        transform[8] = 1;
+        return transform;
+    }
+
+    template<typename T>
+    Transform3dUniform<T> Matrix2x2<T>::MakeTransform3D(const Vector2<T>& offset) const noexcept
+    {
+        Transform3dUniform<T> transform;
+        transform[0] = line1.x;
+        transform[1] = line1.y;
+        transform[2] = 0;
+        transform[3] = 0;
+        transform[4] = line2.x;
+        transform[5] = line2.y;
+        transform[6] = 0;
+        transform[7] = 0;
+        transform[8] = 0;
+        transform[9] = 0;
+        transform[10] = 1;
+        transform[11] = 0;
+        transform[12] = offset.x;
+        transform[13] = offset.y;
+        transform[14] = 0;
+        transform[15] = 1;
+        return transform;
+    }
+
+    template<typename T>
+    std::pair<Matrix2x2<T>, Vector2<T>> Matrix2x2<T>::ReadTransform(const Transform2dUniform<T>& transform) noexcept
+    {
+        Matrix2x2<T> matrix;
+        matrix.line1 = {transform[0], transform[1]};
+        matrix.line2 = {transform[3], transform[4]};
+        Vector2<T> offset = {transform[2], transform[5]};
+        return {matrix, offset};
+    }
+
+    template<typename T>
+    std::pair<Matrix2x2<T>, Vector2<T>> Matrix2x2<T>::ReadTransform(const Transform3dUniform<T>& transform) noexcept
+    {
+        Matrix2x2<T> matrix;
+        matrix.line1 = {transform[0], transform[1]};
+        matrix.line2 = {transform[4], transform[5]};
+        Vector2<T> offset = {transform[12], transform[13]};
+        return {matrix, offset};
+    }
+
 
 } // namespace linal

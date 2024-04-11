@@ -2,26 +2,27 @@
 #include <stdexcept>
 #include <climits>
 #include <array>
+#include <utility>
 
 namespace linal // structures declarations
 {
     template<typename T>
-    struct Vector2;
+    struct Vector2; // done
 
     template<typename T>
-    struct Direction2;
+    struct Direction2; // done
 
     template<typename T>
-    struct Complex;
+    struct Complex; // done
 
     template<typename T>
-    struct Rotator2; // to do
+    struct Rotator2;
 
     template<typename T>
-    struct Matrix2x2;
+    struct Matrix2x2; // done
 
     template<typename T>
-    struct RotMatrix2x2; // to do
+    struct RotMatrix2x2;
 
     template<typename T>
     using Transform2dUniform = std::array<T, 9>;
@@ -141,6 +142,7 @@ namespace linal // structures declarations
         Vector2<T> coordinates;
         
         friend struct Vector2<T>;
+        friend struct RotMatrix2x2<T>;
 
         explicit Direction2(const Vector2<T>& vector) noexcept;
         explicit Direction2(Vector2<T>&& vector) noexcept;
@@ -291,13 +293,13 @@ namespace linal // structures declarations
         bool Compare(const Matrix2x2<T>& other, const T& epsilon2) const noexcept; // for gpt: the method works like ==, but it is tolerant to arithmetical mistake.
 
         // Transpose
-        Matrix2x2<T> Transpose() const noexcept;
+        Matrix2x2<T> Transposed() const noexcept;
 
         // Determinant
         T Det() const noexcept;
 
         // Inverse
-        Matrix2x2<T> Inverse() const;
+        Matrix2x2<T> Inversed() const;
 
         static constexpr Matrix2x2<T> one = 
         {
@@ -309,14 +311,49 @@ namespace linal // structures declarations
             { 0, 0 },
             { 0, 0 }
         };
+
+        Transform2dUniform<T> MakeTransform2D(const Vector2<T>& offset) const noexcept;
+        Transform3dUniform<T> MakeTransform3D(const Vector2<T>& offset) const noexcept;
+
+        static std::pair<Matrix2x2<T>, Vector2<T>> ReadTransform(const Transform2dUniform<T>& transform) noexcept;
+        static std::pair<Matrix2x2<T>, Vector2<T>> ReadTransform(const Transform3dUniform<T>& transform) noexcept;
     };
 
     using Matrix2x2D = Matrix2x2<double>;
     using Matrix2x2F = Matrix2x2<float>;
     using Matrix2x2I = Matrix2x2<int>;
 
-
 //==============================================================================================================================================
+
+    template<typename T>
+    struct RotMatrix2x2
+    {
+        const Direction2<T>& Line1() const noexcept;
+        const Direction2<T>& Line2() const noexcept;
+        const Direction2<T>& Column1() const noexcept;
+        const Direction2<T>& Column2() const noexcept;
+
+        // there is no riliable way to repair rot_matrix. not recomended to accumulate arithmetical error
+        RotMatrix2x2 operator * (const RotMatrix2x2& other) const noexcept;
+
+        // same as transpose
+        RotMatrix2x2<T>& Inverse() noexcept;
+        // same as transposed
+        RotMatrix2x2<T> Inversed() const noexcept;
+
+        const Matrix2x2<T>& AsMatrix() const noexcept;
+
+        static constexpr RotMatrix2x2<T> identity = {Matrix2x2<T>::identity};
+        static constexpr RotMatrix2x2<T> orthogonal_left = {Matrix2x2<T>::orthogonal_left};
+        static constexpr RotMatrix2x2<T> orthogonal_right = {Matrix2x2<T>::orthogonal_right};
+        static constexpr RotMatrix2x2<T> turn_around = {Matrix2x2<T>::turn_around};
+
+    private:
+
+        friend struct Rotator2<T>;
+
+        Matrix2x2<T> value = { { 1, 0 }, { 0, 1 } };
+    };
 
 }
 
@@ -327,3 +364,4 @@ namespace linal // structures declarations
 #include "Linal_Matrix2x2_Definitions.h"
 #include "Linal_Direction2_Definitions.h"
 #include "Linal_Rotator2_Definitions.h"
+#include "Linal_RotMatrix2x2_Definitions.h"
