@@ -7,22 +7,49 @@
 namespace linal // structures declarations
 {
     template<typename T>
-    struct Vector2; // done
+    struct Vector2;
 
     template<typename T>
-    struct Direction2; // done
+    struct Direction2;
 
     template<typename T>
-    struct Complex; // done
+    struct Complex;
 
     template<typename T>
     struct Rotator2;
 
     template<typename T>
-    struct Matrix2x2; // done
+    struct Matrix2x2;
 
     template<typename T>
     struct RotMatrix2x2;
+
+    //------------------------------
+
+#define _2D_IS_TESTED_ false
+#if _2D_IS_TESTED_
+
+    template<typename T>
+    struct Vector3; // to do (implement methods)
+
+    template<typename T>
+    struct Direction3; // to do
+
+    template<typename T>
+    struct Quaternion; // to do
+
+    template<typename T>
+    struct Rotator3; // to do
+
+    template<typename T>
+    struct Matrix3x3; // to do
+
+    template<typename T>
+    struct RotMatrix3x3; // to do
+
+#endif // _2D_IS_TESTED_
+
+    //------------------------------
 
     template<typename T>
     using Transform2dUniform = std::array<T, 9>;
@@ -250,6 +277,11 @@ namespace linal // structures declarations
         static constexpr Rotator2<T> orthogonal_left = Complex<T>{0, 1};
         static constexpr Rotator2<T> orthogonal_right = Complex<T>{0, -1};
         static constexpr Rotator2<T> turn_around = Complex<T>{-1, 0};
+        
+        static Rotator2<T> RadianRot(const T& angle) noexcept;
+        // the sin_cos_calculator should have method "Sin(const T&) -> T&&" and "Cos(const T&) -> T&&"
+        template<typename MathT>
+        static Rotator2<T> RadianRot(const T& angle, MathT&& sin_cos_calculator);
 
     private:
         Complex<T> value;
@@ -354,6 +386,129 @@ namespace linal // structures declarations
 
         Matrix2x2<T> value = { { 1, 0 }, { 0, 1 } };
     };
+
+//##############################################################################################################################################
+
+#if _2D_IS_TESTED_
+
+    template<typename T>
+    struct Vector3
+    {
+        T x = {0};
+        T y = {0};
+        T z = {0};
+
+        Vector3<T>& operator+=(const Vector3<T>& other) noexcept;
+        Vector3<T>& operator-=(const Vector3<T>& other) noexcept;
+        Vector3<T>& operator*=(const T& scalar) noexcept;
+        Vector3<T>& operator/=(const T& scalar);
+        Vector3<T>& operator*=(const Quaternion<T> complex) noexcept;
+
+        T Abs2() const noexcept;
+        T Abs() const noexcept;
+        // sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        T Abs(MathT&& sqrt_calculator) const noexcept;
+
+        Vector3<T> operator+(const Vector3<T>& other) const noexcept;
+        Vector3<T> operator-(const Vector3<T>& other) const noexcept;
+        Vector3<T> operator*(const T& scalar) const noexcept;
+        Vector3<T> operator/(const T& scalar) const;
+        Vector3<T> operator*(const Complex<T> complex) const noexcept;
+        Vector3<T> operator*(const Matrix3x3<T>& matrix) const noexcept;
+
+        T Dot(const Vector3& other) const noexcept;
+        Vector3<T> Cross(const Vector3& other) const noexcept;
+        Vector3<T> operator-() const noexcept;
+
+        Vector3<T>& Normalize();
+        Direction3<T> Normalized() const;
+        // sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        Vector3<T>& Normalize(MathT&& sqrt_calculator);
+        // sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        Direction3<T> Normalized(MathT&& sqrt_calculator) const;
+
+        bool operator==(const Vector3<T>& other) const noexcept;
+        bool operator!=(const Vector3<T>& other) const noexcept;
+        bool Compare(const Vector3<T>& other, const T& epsilon2) const noexcept;
+
+        static constexpr Vector3<T> up = {0, 1, 0};
+        static constexpr Vector3<T> forward = {0, 0, 1};
+        static constexpr Vector3<T> right = {1, 0, 0};
+        static constexpr Vector3<T> left = -right;
+        static constexpr Vector3<T> down = -up;
+        static constexpr Vector3<T> back = -forward;
+        static constexpr Vector3<T> zero = {0, 0, 0};
+        static constexpr Vector3<T> ones = {1, 1, 1};
+    };
+
+    using Vector3D = Vector3<double>;
+    using Vector3F = Vector3<float>;
+    using Vector3I = Vector3<int>;
+
+//==============================================================================================================================================
+
+    template<typename T>
+    struct Quaternion
+    {
+        T re = {0};
+        Vector3<T> im = Vector3<T>::zero;
+
+        Quaternion<T>& operator+=(const Quaternion<T>& other) noexcept;
+        Quaternion<T>& operator-=(const Quaternion<T>& other) noexcept;
+        Quaternion<T>& operator*=(const Quaternion<T>& other) noexcept;
+        Quaternion<T>& operator*=(const T& scalar) noexcept;
+        Quaternion<T>& operator/=(const T& scalar);
+
+        T Abs2() const noexcept;
+        T Abs() const noexcept;
+        // sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        T Abs(MathT&& sqrt_calculator) const noexcept;
+
+        RotMatrix3x3<T> MakeMatrix() const noexcept;
+
+        Quaternion<T> operator+(const Quaternion<T>& other) const noexcept;
+        Quaternion<T> operator-(const Quaternion<T>& other) const noexcept;
+        Quaternion<T> operator*(const Quaternion<T>& other) const noexcept;
+        Quaternion<T> operator*(const T& scalar) const noexcept;
+        Quaternion<T> operator/(const T& scalar) const;
+
+        Quaternion<T> operator-() const noexcept;
+        // same as 1 / Quaternion<T>{re, im}
+        Quaternion<T> Inverted() const;
+        Quaternion<T> Conjugate() const noexcept;
+
+        Quaternion<T>& Normalize();
+        Rotator3<T> Normalized() const;
+        // sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        Quaternion<T>& Normalize(MathT&& sqrt_calculator);
+        // sqrt_calculator should have method "Sqrt(const T&) -> T&&"
+        template<typename MathT>
+        Rotator3<T> Normalized(MathT&& sqrt_calculator) const;
+
+        bool operator==(const Quaternion<T>& other) const noexcept;
+        bool operator!=(const Quaternion<T>& other) const noexcept;
+        bool Compare(const Quaternion<T>& other, const T& epsilon2) const noexcept;
+
+        Vector3<T>& AsVect() noexcept;
+        const Vector3<T>& AsVect() const noexcept;
+
+        static constexpr Quaternion<T> one = {1, Vector3<T>::zero};
+        static constexpr Quaternion<T> i = {0, Vector3<T>::right};
+        static constexpr Quaternion<T> j = {0, Vector3<T>::up};
+        static constexpr Quaternion<T> k = {0, Vector3<T>::forward};
+        static constexpr Quaternion<T> zero = {0, Vector3<T>::zero};
+    };
+
+    using QuatD = Quaternion<double>;
+    using QuatF = Quaternion<float>;
+    using QuatI = Quaternion<int>;
+
+#endif // _2D_IS_TESTED_
 
 }
 

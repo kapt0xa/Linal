@@ -114,4 +114,16 @@ namespace linal
         static_assert(alignof(Rotator2<T>) == alignof(Direction2<T>), "rotator2 and direction2 structs should be simillar");
         return reinterpret_cast<const Direction2<T>&>(*this);
     }
+
+    template<typename T>
+    Rotator2<T> Rotator2<T>::RadianRot(const T& angle) noexcept {
+        return Rotator2<T>{Complex<T>{std::cos(angle), std::sin(angle)}};
+    }
+
+    template<typename T>
+    template<typename MathT>
+    Rotator2<T> Rotator2<T>::RadianRot(const T& angle, MathT&& sin_cos_calculator) {
+        return Rotator2<T>{Complex<T>{sin_cos_calculator.Cos(angle), sin_cos_calculator.Sin(angle)}};
+    }
+
 }
