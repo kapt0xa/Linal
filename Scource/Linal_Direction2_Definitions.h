@@ -115,6 +115,19 @@ namespace linal
         return reinterpret_cast<const Rotator2<T>&>(*this);
     }
 
+    template<typename T>
+    const Direction2<T> Direction2<T>::up = Vector2<T>{ 0, 1 };
+    template<typename T>
+    const Direction2<T> Direction2<T>::forward = up;
+    template<typename T>
+    const Direction2<T> Direction2<T>::down = -up;
+    template<typename T>
+    const Direction2<T> Direction2<T>::back = down;
+    template<typename T>
+    const Direction2<T> Direction2<T>::right = Vector2<T>{ 1, 0 };
+    template<typename T>
+    const Direction2<T> Direction2<T>::left = -right;
+
     // Private Constructors
     template<typename T>
     Direction2<T>::Direction2(const Vector2<T>& vector) noexcept

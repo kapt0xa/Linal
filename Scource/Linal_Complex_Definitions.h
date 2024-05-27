@@ -66,7 +66,7 @@ namespace linal
     template<typename T>
     Matrix2x2<T> Complex<T>::MakeMatrix() const noexcept
     {
-        return Matrix2x2
+        return Matrix2x2<T>
         {
             {re, -im},
             {im, re}
@@ -190,5 +190,14 @@ namespace linal
         static_assert(alignof(Complex<T>) == alignof(Vector2<T>), "complex and vector structs should be simillar");
         return reinterpret_cast<const Vector2<T>&>(*this);
     }
+
+    template <typename T>
+    const Complex<T> Complex<T>::one = {1, 0};
+
+    template <typename T>
+    const Complex<T> Complex<T>::i = {0, 1};
+    
+    template <typename T>
+    const Complex<T> Complex<T>::zero = {0, 0};
 
 } // namespace linal

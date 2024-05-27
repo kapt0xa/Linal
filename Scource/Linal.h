@@ -6,6 +6,11 @@
 
 namespace linal // structures declarations
 {
+    constexpr long double tau =     6.283185307179586476925L;
+    constexpr long double exp_1 =   2.718281828459045235360L;
+    constexpr long double sqrt_05 = 0.707106781186547524401L;
+    constexpr long double phi =    0.6180339887498948482046L;
+
     template<typename T>
     struct Vector2;
 
@@ -26,17 +31,14 @@ namespace linal // structures declarations
 
     //------------------------------
 
-#define _2D_IS_TESTED_ false
-#if _2D_IS_TESTED_
-
     template<typename T>
-    struct Vector3; // to do (implement methods)
+    struct Vector3;
 
     template<typename T>
     struct Direction3; // to do
 
     template<typename T>
-    struct Quaternion; // to do
+    struct Quaternion;
 
     template<typename T>
     struct Rotator3; // to do
@@ -46,8 +48,6 @@ namespace linal // structures declarations
 
     template<typename T>
     struct RotMatrix3x3; // to do
-
-#endif // _2D_IS_TESTED_
 
     //------------------------------
 
@@ -105,14 +105,17 @@ namespace linal // structures declarations
         Complex<T>& AsComplex() noexcept;
         const Complex<T>& AsComplex() const noexcept;
 
-        static constexpr Vector2<T> up = {0, 1};
-        static constexpr Vector2<T> forward = up;
-        static constexpr Vector2<T> down = -up;
-        static constexpr Vector2<T> back = down;
-        static constexpr Vector2<T> right = {1, 0};
-        static constexpr Vector2<T> left = {1, 0};
-        static constexpr Vector2<T> zero = {0, 0};
-        static constexpr Vector2<T> ones = {1, 1};
+        template <typename T2>
+        operator Vector2<T2>() const noexcept;
+
+        static const Vector2<T> up;
+        static const Vector2<T> forward;
+        static const Vector2<T> down;
+        static const Vector2<T> back;
+        static const Vector2<T> right;
+        static const Vector2<T> left;
+        static const Vector2<T> zero;
+        static const Vector2<T> ones;
     };
 
     using Vector2D = Vector2<double>;
@@ -158,12 +161,12 @@ namespace linal // structures declarations
         Rotator2<T>& AsComplex() noexcept;
         const Rotator2<T>& AsComplex() const noexcept;
 
-        static constexpr Direction2<T> up = Vector2<T>{0, 1};
-        static constexpr Direction2<T> forward = up;
-        static constexpr Direction2<T> down = -up;
-        static constexpr Direction2<T> back = down;
-        static constexpr Direction2<T> right = Vector2<T>{1, 0};
-        static constexpr Direction2<T> left = -right;
+        static const Direction2<T> up;
+        static const Direction2<T> forward;
+        static const Direction2<T> down;
+        static const Direction2<T> back;
+        static const Direction2<T> right;
+        static const Direction2<T> left;
 
     private:
         Vector2<T> coordinates;
@@ -176,6 +179,10 @@ namespace linal // structures declarations
         Direction2<T>& operator=(const Vector2<T>& vector) noexcept;
         Direction2<T>& operator=(Vector2<T>&& vector) noexcept;
     };
+
+    using Direction2D = Direction2<double>;
+    using Direction2F = Direction2<float>;
+    using Direction2I = Direction2<int>;
 
 //==============================================================================================================================================
 
@@ -228,9 +235,9 @@ namespace linal // structures declarations
         Vector2<T>& AsVect() noexcept;
         const Vector2<T>& AsVect() const noexcept;
 
-        static constexpr Complex<T> one = {1, 0};
-        static constexpr Complex<T> i = {0, 1};
-        static constexpr Complex<T> zero = {0, 0};
+        static const Complex<T> one;
+        static const Complex<T> i;
+        static const Complex<T> zero;
     };
 
     using ComplexD = Complex<double>;
@@ -259,6 +266,7 @@ namespace linal // structures declarations
         RotMatrix2x2<T> MakeMatrix() const noexcept;
 
         Rotator2<T> operator*(const Rotator2<T> other) const noexcept;
+        Rotator2<T> operator/(const Rotator2<T> other) const noexcept;
 
         Direction2<T>& RepairFast();
         Direction2<T>& Repair();
@@ -273,15 +281,26 @@ namespace linal // structures declarations
         Direction2<T>& AsVect() noexcept;
         const Direction2<T>& AsVect() const noexcept;
 
-        static constexpr Rotator2<T> identity = Complex<T>{1, 0};
-        static constexpr Rotator2<T> orthogonal_left = Complex<T>{0, 1};
-        static constexpr Rotator2<T> orthogonal_right = Complex<T>{0, -1};
-        static constexpr Rotator2<T> turn_around = Complex<T>{-1, 0};
+        T GetAngle() const noexcept;
+        // the asin_acos_calculator should have method "ASin(const T&) -> T&&", "ACos(const T&) -> T&&" and "SqrtHalf() -> const T"; sqrt half == sqrt(0.5) == sin(tau/8)
+        template<typename MathT>
+        T GetAngle(MathT&& asin_acos_calculator) const noexcept;
+
+        static const Rotator2<T> identity;
+        static const Rotator2<T> orthogonal_left;
+        static const Rotator2<T> orthogonal_right;
+        static const Rotator2<T> turn_around;
         
         static Rotator2<T> RadianRot(const T& angle) noexcept;
         // the sin_cos_calculator should have method "Sin(const T&) -> T&&" and "Cos(const T&) -> T&&"
         template<typename MathT>
         static Rotator2<T> RadianRot(const T& angle, MathT&& sin_cos_calculator);
+
+        static Rotator2<T> FromTo(const Vector2<T>& from, const Vector2<T>& to) noexcept;
+        // might have to use RepairFast() after it.
+        static Rotator2<T> FromTo(const Direction2<T>& from, const Direction2<T>& to) noexcept;
+        template<typename MathT>
+        static Rotator2<T> FromTo(const Vector2<T>& from, const Vector2<T>& to, MathT&& sqrt_calculator) noexcept;
 
     private:
         Complex<T> value;
@@ -294,35 +313,39 @@ namespace linal // structures declarations
         Rotator2<T>& operator=(Complex<T>&& complex) noexcept;
     };
 
+    using Rotator2D = Rotator2<double>;
+    using Rotator2F = Rotator2<float>;
+    using Rotator2I = Rotator2<int>;
+
 //==============================================================================================================================================
 
     template<typename T>
     struct Matrix2x2
     {
+        Vector2<T> line0 = {0, 0};
         Vector2<T> line1 = {0, 0};
-        Vector2<T> line2 = {0, 0};
 
         // Compound assignment operators
         Matrix2x2<T>& operator+=(const Matrix2x2<T>& other) noexcept;
         Matrix2x2<T>& operator-=(const Matrix2x2<T>& other) noexcept;
         Matrix2x2<T>& operator*=(const T& scalar) noexcept;
         Matrix2x2<T>& operator/=(const T& scalar);
-        Matrix2x2<T>& operator*=(const Matrix2x2<T>& other) const noexcept; // for gpt: define the method via operator *
+        Matrix2x2<T>& operator*=(const Matrix2x2<T>& other) const noexcept;
 
         // Unary arithmetic operators
         Matrix2x2<T> operator-() const noexcept;
 
         // Binary arithmetic operators
-        Matrix2x2<T> operator+(const Matrix2x2<T>& other) const noexcept; // for gpt: define this method and others via copying and operator += or another changing operator 
+        Matrix2x2<T> operator+(const Matrix2x2<T>& other) const noexcept;
         Matrix2x2<T> operator-(const Matrix2x2<T>& other) const noexcept;
         Matrix2x2<T> operator*(const T& scalar) const noexcept;
         Matrix2x2<T> operator/(const T& scalar) const;
-        Matrix2x2<T> operator*(const Matrix2x2<T>& other) const noexcept; // for gpt: define the method via transpose and Vector2::Dot();
+        Matrix2x2<T> operator*(const Matrix2x2<T>& other) const noexcept;
 
         // Comparison operators
         bool operator==(const Matrix2x2<T>& other) const noexcept;
         bool operator!=(const Matrix2x2<T>& other) const noexcept;
-        bool Compare(const Matrix2x2<T>& other, const T& epsilon2) const noexcept; // for gpt: the method works like ==, but it is tolerant to arithmetical mistake.
+        bool Compare(const Matrix2x2<T>& other, const T& epsilon2) const noexcept;
 
         // Transpose
         Matrix2x2<T> Transposed() const noexcept;
@@ -333,16 +356,8 @@ namespace linal // structures declarations
         // Inverse
         Matrix2x2<T> Inversed() const;
 
-        static constexpr Matrix2x2<T> one = 
-        {
-            { 1, 0 },
-            { 0, 1 }
-        };
-        static constexpr Matrix2x2<T> zero = 
-        {
-            { 0, 0 },
-            { 0, 0 }
-        };
+        static const Matrix2x2<T> one;
+        static const Matrix2x2<T> zero;
 
         Transform2dUniform<T> MakeTransform2D(const Vector2<T>& offset) const noexcept;
         Transform3dUniform<T> MakeTransform3D(const Vector2<T>& offset) const noexcept;
@@ -360,10 +375,10 @@ namespace linal // structures declarations
     template<typename T>
     struct RotMatrix2x2
     {
+        const Direction2<T>& Line0() const noexcept;
         const Direction2<T>& Line1() const noexcept;
-        const Direction2<T>& Line2() const noexcept;
+        const Direction2<T>& Column0() const noexcept;
         const Direction2<T>& Column1() const noexcept;
-        const Direction2<T>& Column2() const noexcept;
 
         // there is no riliable way to repair rot_matrix. not recomended to accumulate arithmetical error
         RotMatrix2x2 operator * (const RotMatrix2x2& other) const noexcept;
@@ -375,10 +390,10 @@ namespace linal // structures declarations
 
         const Matrix2x2<T>& AsMatrix() const noexcept;
 
-        static constexpr RotMatrix2x2<T> identity = {Matrix2x2<T>::identity};
-        static constexpr RotMatrix2x2<T> orthogonal_left = {Matrix2x2<T>::orthogonal_left};
-        static constexpr RotMatrix2x2<T> orthogonal_right = {Matrix2x2<T>::orthogonal_right};
-        static constexpr RotMatrix2x2<T> turn_around = {Matrix2x2<T>::turn_around};
+        static const RotMatrix2x2<T> identity;
+        static const RotMatrix2x2<T> orthogonal_left;
+        static const RotMatrix2x2<T> orthogonal_right;
+        static const RotMatrix2x2<T> turn_around;
 
     private:
 
@@ -387,9 +402,11 @@ namespace linal // structures declarations
         Matrix2x2<T> value = { { 1, 0 }, { 0, 1 } };
     };
 
-//##############################################################################################################################################
+    using RotMatrix2x2D = RotMatrix2x2<double>;
+    using RotMatrix2x2F = RotMatrix2x2<float>;
+    using RotMatrix2x2I = RotMatrix2x2<int>;
 
-#if _2D_IS_TESTED_
+//##############################################################################################################################################
 
     template<typename T>
     struct Vector3
@@ -402,7 +419,6 @@ namespace linal // structures declarations
         Vector3<T>& operator-=(const Vector3<T>& other) noexcept;
         Vector3<T>& operator*=(const T& scalar) noexcept;
         Vector3<T>& operator/=(const T& scalar);
-        Vector3<T>& operator*=(const Quaternion<T> complex) noexcept;
 
         T Abs2() const noexcept;
         T Abs() const noexcept;
@@ -414,7 +430,7 @@ namespace linal // structures declarations
         Vector3<T> operator-(const Vector3<T>& other) const noexcept;
         Vector3<T> operator*(const T& scalar) const noexcept;
         Vector3<T> operator/(const T& scalar) const;
-        Vector3<T> operator*(const Complex<T> complex) const noexcept;
+        Vector3<T> operator*(const Quaternion<T> complex) const noexcept;
         Vector3<T> operator*(const Matrix3x3<T>& matrix) const noexcept;
 
         T Dot(const Vector3& other) const noexcept;
@@ -494,21 +510,68 @@ namespace linal // structures declarations
         bool operator!=(const Quaternion<T>& other) const noexcept;
         bool Compare(const Quaternion<T>& other, const T& epsilon2) const noexcept;
 
-        Vector3<T>& AsVect() noexcept;
-        const Vector3<T>& AsVect() const noexcept;
-
-        static constexpr Quaternion<T> one = {1, Vector3<T>::zero};
-        static constexpr Quaternion<T> i = {0, Vector3<T>::right};
-        static constexpr Quaternion<T> j = {0, Vector3<T>::up};
-        static constexpr Quaternion<T> k = {0, Vector3<T>::forward};
-        static constexpr Quaternion<T> zero = {0, Vector3<T>::zero};
+        static const Quaternion<T> one;
+        static const Quaternion<T> i;
+        static const Quaternion<T> j;
+        static const Quaternion<T> k;
+        static const Quaternion<T> zero;
     };
 
     using QuatD = Quaternion<double>;
     using QuatF = Quaternion<float>;
     using QuatI = Quaternion<int>;
 
-#endif // _2D_IS_TESTED_
+//==============================================================================================================================================
+
+    template<typename T>
+    struct Matrix3x3
+    {
+        Vector3<T> line0 = { 0, 0, 0 };
+        Vector3<T> line1 = { 0, 0, 0 };
+        Vector3<T> line2 = { 0, 0, 0 };
+
+        // Compound assignment operators
+        Matrix3x3<T>& operator+=(const Matrix3x3<T>& other) noexcept;
+        Matrix3x3<T>& operator-=(const Matrix3x3<T>& other) noexcept;
+        Matrix3x3<T>& operator*=(const T& scalar) noexcept;
+        Matrix3x3<T>& operator/=(const T& scalar);
+        Matrix3x3<T>& operator*=(const Matrix3x3<T>& other) const noexcept; // for gpt: define the method via operator *
+
+        // Unary arithmetic operators
+        Matrix3x3<T> operator-() const noexcept;
+
+        // Binary arithmetic operators
+        Matrix3x3<T> operator+(const Matrix3x3<T>& other) const noexcept; // for gpt: define this method and others via copying and operator += or another changing operator 
+        Matrix3x3<T> operator-(const Matrix3x3<T>& other) const noexcept;
+        Matrix3x3<T> operator*(const T& scalar) const noexcept;
+        Matrix3x3<T> operator/(const T& scalar) const;
+        Matrix3x3<T> operator*(const Matrix3x3<T>& other) const noexcept; // for gpt: define the method via transpose and Vector3::Dot();
+
+        // Comparison operators
+        bool operator==(const Matrix3x3<T>& other) const noexcept;
+        bool operator!=(const Matrix3x3<T>& other) const noexcept;
+        bool Compare(const Matrix3x3<T>& other, const T& epsilon2) const noexcept; // for gpt: the method works like ==, but it is tolerant to arithmetical mistake.
+
+        // Transpose
+        Matrix3x3<T> Transposed() const noexcept;
+
+        // Determinant
+        T Det() const noexcept;
+
+        // Inverse
+        Matrix3x3<T> Inversed() const;
+
+        static const Matrix3x3<T> one;
+        static const Matrix3x3<T> zero;
+
+        Transform3dUniform<T> MakeTransform3D(const Vector3<T>& offset) const noexcept;
+
+        static std::pair<Matrix3x3<T>, Vector3<T>> ReadTransform(const Transform3dUniform<T>& transform) noexcept;
+    };
+
+    using Matrix3x3D = Matrix3x3<double>;
+    using Matrix3x3F = Matrix3x3<float>;
+    using Matrix3x3I = Matrix3x3<int>;
 
 }
 
@@ -520,3 +583,10 @@ namespace linal // structures declarations
 #include "Linal_Direction2_Definitions.h"
 #include "Linal_Rotator2_Definitions.h"
 #include "Linal_RotMatrix2x2_Definitions.h"
+
+#include "Linal_Vector3_Definitions.h"
+#include "Linal_Quaternion_Definitions.h"
+#include "Linal_Matrix3x3_Definitions.h"
+#include "Linal_Direction3_Definitions.h"
+#include "Linal_Rotator3_Definitions.h"
+#include "Linal_RotMatrix3x3_Definitions.h"

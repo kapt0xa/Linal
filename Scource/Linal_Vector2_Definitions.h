@@ -1,5 +1,6 @@
 #pragma once
 #include "Linal.h"
+#include <cmath>
 
 namespace linal
 {
@@ -111,9 +112,9 @@ namespace linal
     {
         return
         {
-            x * matrix.line1.x + y * matrix.line2.x,
-            x * matrix.line1.y + y * matrix.line2.y
-        }
+            x * matrix.line0.x + y * matrix.line1.x,
+            x * matrix.line0.y + y * matrix.line1.y
+        };
     }
 
     template<typename T>
@@ -199,4 +200,39 @@ namespace linal
         static_assert(alignof(Complex<T>) == alignof(Vector2<T>), "complex and vector structs should be simillar");
         return reinterpret_cast<Complex<T>>(*this);
     }
+
+    template<typename T>
+    template<typename T2>
+    Vector2<T>::operator Vector2<T2>() const noexcept
+    {
+        return
+        {
+            static_cast<T2>(x),
+            static_cast<T2>(y)
+        };
+    }
+
+    template<typename T>
+    const Vector2<T> Vector2<T>::up = {0, 1};
+
+    template<typename T>
+    const Vector2<T> Vector2<T>::forward = Vector2<T>::up;
+
+    template<typename T>
+    const Vector2<T> Vector2<T>::down = -Vector2<T>::up;
+
+    template<typename T>
+    const Vector2<T> Vector2<T>::back = -Vector2<T>::forward;
+
+    template<typename T>
+    const Vector2<T> Vector2<T>::right = {1, 0};
+    
+    template<typename T>
+    const Vector2<T> Vector2<T>::left = {1, 0};
+    
+    template<typename T>
+    const Vector2<T> Vector2<T>::zero = {0, 0};
+    
+    template<typename T>
+    const Vector2<T> Vector2<T>::ones = {1, 1};
 } // namespace linal

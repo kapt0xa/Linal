@@ -1,5 +1,6 @@
 #pragma once
 #include "Linal.h"
+#include <cmath>
 
 namespace linal
 {
@@ -57,6 +58,12 @@ namespace linal
     Rotator2<T> Rotator2<T>::operator*(const Rotator2<T> other) const noexcept
     {
         return value * other.value;
+    }
+    
+    template<typename T>
+    Rotator2<T> Rotator2<T>::operator/(const Rotator2<T> other) const noexcept
+    {
+        return value * other.value.Conjugate();
     }
 
     template<typename T>
@@ -116,14 +123,122 @@ namespace linal
     }
 
     template<typename T>
-    Rotator2<T> Rotator2<T>::RadianRot(const T& angle) noexcept {
+    T Rotator2<T>::GetAngle() const noexcept
+    {
+        constexpr T sqrt_half = T{0.70710678118};
+        if(std::abs(GetRe()) < sqrt_half)
+        {
+            if(GetIm() > 0)
+            {
+                return std::acos(GetRe());
+            }
+            else
+            {
+                return -std::acos(GetRe());
+            }
+        }
+        else
+        {
+            if(GetRe() > 0)
+            {
+                return std::asin(GetRe());
+            }
+            else
+            {
+                if(GetIm() > 0)
+                {
+                    return tau/2 - std::asin(GetRe());
+                }
+                else
+                {
+                    return -tau/2 - std::asin(GetRe());
+                }
+            }
+        }
+    }
+
+    // the asin_acos_calculator should have method "ASin(const T&) -> T&&" and "ACos(const T&) -> T&&"
+    template<typename T>
+    template<typename MathT>
+    T Rotator2<T>::GetAngle(MathT&& asin_acos_calculator) const noexcept
+    {
+        if(std::abs(GetRe()) < asin_acos_calculator.SqrtHalf())
+        {
+            if(GetIm() > 0)
+            {
+                return asin_acos_calculator.ACos(GetRe());
+            }
+            else
+            {
+                return -asin_acos_calculator.ACos(GetRe());
+            }
+        }
+        else
+        {
+            if(GetRe() > 0)
+            {
+                return asin_acos_calculator.ASin(GetRe());
+            }
+            else
+            {
+                if(GetIm() > 0)
+                {
+                    return tau/2 - asin_acos_calculator.ASin(GetRe());
+                }
+                else
+                {
+                    return -tau/2 - asin_acos_calculator.ASin(GetRe());
+                }
+            }
+        }
+    }
+
+    template <typename T>
+    const Rotator2<T> Rotator2<T>::identity = Rotator2(Complex<T>{1, 0});
+
+    template <typename T>
+    const Rotator2<T> Rotator2<T>::orthogonal_left = Rotator2(Complex<T>{0, 1});
+
+    template <typename T>
+    const Rotator2<T> Rotator2<T>::orthogonal_right = Rotator2(Complex<T>{0, -1});
+
+    template <typename T>
+    const Rotator2<T> Rotator2<T>::turn_around = Rotator2(Complex<T>{-1, 0});
+
+    template<typename T>
+    Rotator2<T> Rotator2<T>::RadianRot(const T& angle) noexcept 
+    {
         return Rotator2<T>{Complex<T>{std::cos(angle), std::sin(angle)}};
     }
 
     template<typename T>
     template<typename MathT>
-    Rotator2<T> Rotator2<T>::RadianRot(const T& angle, MathT&& sin_cos_calculator) {
+    Rotator2<T> Rotator2<T>::RadianRot(const T& angle, MathT&& sin_cos_calculator) 
+    {
         return Rotator2<T>{Complex<T>{sin_cos_calculator.Cos(angle), sin_cos_calculator.Sin(angle)}};
+    }
+
+    template<typename T>
+    Rotator2<T> Rotator2<T>::FromTo(const Vector2<T>& from, const Vector2<T>& to) noexcept
+    {
+        Rotator2 result = to.AsComplex() / from.AsComplex();
+        result.Repair();
+        return result;
+    }
+
+    template<typename T>
+    Rotator2<T> Rotator2<T>::FromTo(const Direction2<T>& from, const Direction2<T>& to) noexcept
+    {
+        return to.AsComplex() / from.AsComplex();
+    }
+
+    template<typename T>
+    template<typename MathT>
+    Rotator2<T> Rotator2<T>::FromTo(const Vector2<T>& from, const Vector2<T>& to, MathT&& sqrt_calculator) noexcept
+    {
+        Rotator2 result = to.AsComplex() / from.AsComplex();
+        result.Repair(std::forward(sqrt_calculator));
+        return result;
     }
 
 }
